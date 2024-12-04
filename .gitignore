@@ -1,0 +1,7 @@
+node_modules/
+package-lock.json
+/test-results/
+/blob-report/
+/playwright/.cache/
+/screenshot-test/
+**/.DS_Store

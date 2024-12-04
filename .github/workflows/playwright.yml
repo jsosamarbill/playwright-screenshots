@@ -1,0 +1,53 @@
+name: Screenshot Tests
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+    inputs:
+      body:
+        default: ""
+      test:
+        default: "false"
+
+permissions:
+  id-token: write
+  pages: write
+  deployments: write
+
+jobs:
+  test:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version: lts/*
+    - name: npm install
+      run: npm install
+    - name: Install dependencies
+      run: npm ci
+    - name: Install Playwright Browsers
+      run: npx playwright install --with-deps
+    - name: Run Playwright tests
+      run: npx playwright test tests/screenshot-tests/screenshot-tests.spec.js
+  # Configure Pages
+    - name: Configure GitHub Pages
+      uses: actions/configure-pages@v3
+  # Upload the report as a pages artifact
+    - name: Upload Pages Artifact
+      uses: actions/upload-pages-artifact@v2
+      with:
+        path: playwright-report/
+  # Deploy the Pages site
+  deploy:
+    needs: test
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+    - name: Deploy to GitHub Pages
+      uses: actions/deploy-pages@v2  
